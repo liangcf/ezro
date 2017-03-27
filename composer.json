@@ -1,0 +1,32 @@
+{
+  "name": "liangcf/ez_frame",
+  "description": "work study",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "LiangChaoFu",
+      "email": "lcf@jionx.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "ezro\\core\\src\\control\\": "ezro/core/src/control/",
+      "ezro\\core\\src\\db\\": "ezro/core/src/db/",
+      "ezro\\core\\src\\service\\": "ezro/core/src/service/",
+      "ezro\\core\\src\\tool\\": "ezro/core/src/tool/",
+      "ezro\\core\\src\\utils\\": "ezro/core/src/utils/",
+
+      "ezro\\core\\run\\": "ezro/core/run/",
+
+      "modules\\web\\src\\controller\\":"modules/web/src/controller/",
+      "modules\\web\\src\\dao\\":"modules/web/src/dao/",
+      "modules\\web\\src\\db\\":"modules/web/src/db/",
+      "modules\\web\\src\\service\\":"modules/web/src/service/",
+      "modules\\web\\src\\utils\\":"modules/web/src/utils/"
+    }
+  }
+}
