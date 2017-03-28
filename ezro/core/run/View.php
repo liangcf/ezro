@@ -16,7 +16,7 @@ class View
     /*视图*/
     public function view($whole){
         $this->data=$whole['whole']['data']['data'];
-        if(isset($whole['whole']['data']['api'])&&$whole['whole']['data']['api']===true){
+        if($whole['whole']['data']['api']===true){
             $this->renderAPI($this->data);
         }
         $transfer['before']=$whole['whole']['before'];
@@ -24,22 +24,22 @@ class View
         $transfer['after']=$whole['whole']['after'];
         $this->overall=$transfer;
         if($whole['whole']['data']['view']!==null){
-            $_url=$whole['wholes']['view_diy'].strtolower($whole['whole']['data']['view']);
+            $_url=$whole['wholes']['view_diy'].$whole['whole']['data']['view'];
         }else{
             $_url=$whole['wholes']['view_dir'];
         }
         $content=$_url.'.phtml';
-        $layOutFile=$whole['wholes']['layout'].'.phtml';
-        if(is_file($content)&&is_file($layOutFile)){
-            $this->views($layOutFile,$content);
+        $layoutFile=$whole['wholes']['layout'].'.phtml';
+        if(is_file($content)&&is_file($layoutFile)){
+            $this->views($layoutFile,$content);
         }else{
             throw new \Exception($content.':view is not found',404);
         }
     }
-    private function views($_layOutFile,$_content){
+    private function views($_layoutFile,$_content){
         $data=$this->data;
         $overall=$this->overall;
-        require $_layOutFile;
+        require $_layoutFile;
     }
     /*加载css方法*/
     public function appendCss($var){
@@ -55,14 +55,6 @@ class View
             return date("Y-m-d",time());
         }else{
             return date("Y-m-d",strtotime($time));
-        }
-    }
-    /*输出函数*/
-    public function _echo($string,$default=null){
-        if(empty($string)){
-            echo $default;
-        }else{
-            echo $string;
         }
     }
     /*判断是否存在的值*/

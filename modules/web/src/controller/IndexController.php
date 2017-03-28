@@ -77,7 +77,15 @@ class IndexController extends Controller
             exit();
         }
     }
-    public function testAction(){
+    public function apiAction(){
+        $this->api();
+        $userDao=parent::dbDao('UsersDao');
+        /*根据id查询数据*/
+        $res2=$userDao->selectId('a0acd183542b0d2ab2d52291171aef0b');
+        $this->result(array('code'=>0,'data'=>$res2))->json();
+        return $this->response();
+    }
+    public function yzmAction(){
         $this->api();
         VerifyCode::yzmCode();
     }

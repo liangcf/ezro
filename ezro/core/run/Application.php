@@ -75,40 +75,27 @@ class Application
         if(!class_exists($_className)){
             throw new \Exception($_className.":Controller in not found",404);
         }
-        $data=self::runMethod($_className,$_funName,$_module);
+        self::$moduleObj=new $_className();
+        if(!method_exists(self::$moduleObj,$_funName)){
+            throw new \Exception($_funName.':undefined in--'.$_className,500);
+        }
+        /*反射*/
+        self::$moduleObj->_init($_module);
+        $whole['before']=self::$moduleObj->beforeRequest();
+        $whole['data']=self::$moduleObj->$_funName();
+        $whole['after']=self::$moduleObj->afterRequest();
+        $layout=self::$moduleObj->_getLayout();
         $_controller=strtolower($action['_controller']);
-        $wholes['layout']=self::$baseRoot.'/modules/'.$_module.'/view/layout/'.strtolower($data['layout']);
+        $wholes['layout']=self::$baseRoot.'/modules/'.$_module.'/view/layout/'.strtolower($layout);
         /* 寻找视图文件的路径 */
         $wholes['view_dir']=self::$baseRoot.'/modules/'.$_module.'/view/'.$_module.'/'.$_controller.'/'.$_action;
         $wholes['view_diy']=self::$baseRoot.'/modules/'.$_module.'/view/'.$_module.'/'.$_controller.'/';
-
-        $whole['before']=$data['before'];
-        $whole['data']=$data['data'];
-        $whole['after']=$data['after'];
         return array('whole'=>$whole,'wholes'=>$wholes);
     }
 
     private function initHeader(){
         header('Content-Type: text/html; charset=UTF-8');
     }
-
-    public static function runMethod($className,$method,$module){
-        try {
-            self::$moduleObj=new $className();
-            self::$moduleObj->_init($module);
-            $whole['before']=self::$moduleObj->beforeRequest();
-            if(!method_exists(self::$moduleObj,$method)){
-                throw new \Exception($method.':undefined',500);
-            }
-            $whole['data']=self::$moduleObj->$method();
-            $whole['after']=self::$moduleObj->afterRequest();
-            $whole['layout']=self::$moduleObj->_getLayout();
-            return $whole;
-        } catch (\Exception $e) {
-            throw new \Exception($className.'-- is not found in runMethod,message:'.$e->getMessage(),500);
-        }
-    }
-
 
     /**
      * 异常处理参考
