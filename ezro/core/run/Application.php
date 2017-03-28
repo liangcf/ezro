@@ -11,6 +11,9 @@ class Application
     private static $runMode;
     private static $config;
     private static $baseRoot;
+    /** @var object $moduleObj*/
+    private static $moduleObj = null;
+
     public static function init(){
         self::$config=GetConfigs::runConfigs();
         self::$runMode=isset(self::$config['run_mode'])?self::$config['run_mode']:false;
@@ -24,8 +27,7 @@ class Application
     public function run(){
         $this->initHeader();
         $this->handleException();
-        $action=$this->route();
-        $this->view($action);
+        $this->view($this->route());
     }
 
     /*拼装路由*/
@@ -38,7 +40,6 @@ class Application
         }
         $action=self::$config['route'];
         if($_uri=='/'){
-            //$action=array('_module'=>'web','_controller'=>'index','_action'=>'index');
             return $action;
         }
         $pathArr=explode('/',trim($_uri,'/'));
@@ -74,10 +75,7 @@ class Application
         if(!class_exists($_className)){
             throw new \Exception($_className.":Controller in not found",404);
         }
-        $data=MainRun::runMethod($_className,$_funName,$_module);
-        if(empty($data)){
-            throw new \Exception("not return data",404);
-        }
+        $data=self::runMethod($_className,$_funName,$_module);
         $_controller=strtolower($action['_controller']);
         $wholes['layout']=self::$baseRoot.'/modules/'.$_module.'/view/layout/'.strtolower($data['layout']);
         /* 寻找视图文件的路径 */
@@ -93,6 +91,25 @@ class Application
     private function initHeader(){
         header('Content-Type: text/html; charset=UTF-8');
     }
+
+    public static function runMethod($className,$method,$module){
+        try {
+            self::$moduleObj=new $className();
+            self::$moduleObj->_init($module);
+            $whole['before']=self::$moduleObj->beforeRequest();
+            if(!method_exists(self::$moduleObj,$method)){
+                throw new \Exception($method.':undefined',500);
+            }
+            $whole['data']=self::$moduleObj->$method();
+            $whole['after']=self::$moduleObj->afterRequest();
+            $whole['layout']=self::$moduleObj->_getLayout();
+            return $whole;
+        } catch (\Exception $e) {
+            throw new \Exception($className.'-- is not found in runMethod,message:'.$e->getMessage(),500);
+        }
+    }
+
+
     /**
      * 异常处理参考
      * @url:https://github.com/zhangbaitong/plume
@@ -120,7 +137,6 @@ class Application
      * @param $e \Exception
      */
     public function exception_function($e){
-        /*log*/
         self::logs('exception_function','exception_function',$e->getMessage());
         if($e->getCode()==404){
             ErrorHandle::error404();

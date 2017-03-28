@@ -22,7 +22,7 @@ class MainRun{
             }
             $whole['data']=self::$objects[$className]->$method();
             $whole['after']=self::$objects[$className]->afterRequest();
-            $whole['layout']=self::$objects[$className]->_getLayOut();
+            $whole['layout']=self::$objects[$className]->_getLayout();
             return $whole;
         } catch (\Exception $e) {
             throw new \Exception($className.'-- is not found in MainRun:runMethod,message:'.$e->getMessage(),500);

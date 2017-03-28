@@ -14,7 +14,7 @@ abstract class Controller
 {
 	use TraitController;
 
-	public $_layOut='layout';
+	public $_layout='layout';
 	public $module='web';
 
 	/*获取application.config.php配置文件中的配置项*/
@@ -147,8 +147,8 @@ abstract class Controller
     }
 
 	/*设置制定的layout页面*/
-    protected function setLayout($_layMode='layout'){
-        $this->_layOut=$_layMode;
+    protected function setLayout($layMode){
+        $this->_layout=$layMode;
     }
 
 	/*调用请求的Action前需要执行的动作*/
@@ -163,8 +163,8 @@ abstract class Controller
 	public function _init($module){
 		$this->module=$module;
 	}
-    public function _getLayOut(){
-        return $this->_layOut;
+    public function _getLayout(){
+        return $this->_layout;
     }
     /****************************************************************************************************************/
 }

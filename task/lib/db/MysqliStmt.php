@@ -10,28 +10,22 @@ class MysqliStmt
     /**
      * @var \mysqli
      */
-    private $link;
+    private $link=null;
     private $_keys='';
     private $_values='';
     private $_bindType='';
     private $_wheres='';
     private $_orWheres='';
     private $_bindValue=array();
-    private $_sql='';
-    private $_parameter=array();
-    private $_selfErrorNo=6000;//函数本身异常代码
-    private $_funErrorNo=6001;//外界函数异常代码
-    private $_paraErrorNo=6002;//参数异常代码
-
+    private static $_selfErrorNo=6000;//函数本身异常代码
+    private static $_funErrorNo=6001;//外界函数异常代码
+    private static $_paraErrorNo=6002;//参数异常代码
     private static $instance=null;
-    private static $instanceArr=array();
-
-    private static $dbName='';
     /**
      * @param array $config
      * @throws \Exception
      */
-    private function __construct($config=array()){
+    private function __construct($config){
         if(empty($config)){
             $defaultDb= require __DIR__ . '/../config/config.php';
             $config=$defaultDb['db'];
@@ -41,13 +35,12 @@ class MysqliStmt
             throw new \Exception('database link failed !please configure the run.config.php file under the config folder --error:'.$conn->error.' --connect_errno:'.$conn->connect_errno);
         }
         $conn->set_charset($config['db_char_set']);
-        self::$dbName=$config['db_name'];
         $this->link=$conn;
     }
 
     private function __clone(){}
 
-    public static function getInstance($config=null){
+    public static function getInstance($config=array()){
         if(self::$instance){
             return self::$instance;
         }
@@ -73,12 +66,12 @@ class MysqliStmt
      */
     public function insert($table,$data){
         if(!is_array($data)||empty($data)){
-            throw new \Exception('[insert] parameter error!',$this->_paraErrorNo);
+            throw new \Exception('[insert] parameter error!',self::$_paraErrorNo);
         }
         $sql='insert into '.$table;
         if(!$this->iBand($data)){
             $this->clear();
-            throw new \Exception('external function [iBand] exception',$this->_funErrorNo);
+            throw new \Exception('external function [iBand] exception',self::$_funErrorNo);
         }
         try{
             $sql.=' ('.$this->_keys.') values ('.$this->_values.')';
@@ -95,7 +88,7 @@ class MysqliStmt
             }
             return false;
         }catch (\Exception $e){
-            throw new \Exception('self function [insert] exception ,message: <  '.$e->getMessage().'  >',$this->_selfErrorNo);
+            throw new \Exception('self function [insert] exception ,message: <  '.$e->getMessage().'  >',self::$_selfErrorNo);
         }
     }
 
@@ -109,12 +102,12 @@ class MysqliStmt
      */
     public function updateId($table,$id,$data){
         if(!is_array($data)||empty($data)){
-            throw new \Exception('[updateId] parameter error!',$this->_paraErrorNo);
+            throw new \Exception('[updateId] parameter error!',self::$_paraErrorNo);
         }
         $sql='update '.$table.' set ';
         if(!$this->uBand($data)){
             $this->clear();
-            throw new \Exception('external function [uBand] exception',$this->_funErrorNo);
+            throw new \Exception('external function [uBand] exception',self::$_funErrorNo);
         }
         try{
             $sql.=' '.$this->_keys.' where id=? ';
@@ -133,7 +126,7 @@ class MysqliStmt
             }
             return false;
         }catch (\Exception $e){
-            throw new \Exception('self function [updateId] exception ,message: <  '.$e->getMessage().'  >',$this->_selfErrorNo);
+            throw new \Exception('self function [updateId] exception ,message: <  '.$e->getMessage().'  >',self::$_selfErrorNo);
         }
     }
 
@@ -147,18 +140,18 @@ class MysqliStmt
      */
     public function update($table,$data,$where){
         if(!is_array($data)||empty($data)||!is_array($where)||empty($where)){
-            throw new \Exception('[update] parameter error!',$this->_paraErrorNo);
+            throw new \Exception('[update] parameter error!',self::$_paraErrorNo);
         }
         $sql='update '.$table.' set ';
         if(!$this->uBand($data)){
             $this->clear();
-            throw new \Exception('external function [uBand] exception',$this->_funErrorNo);
+            throw new \Exception('external function [uBand] exception',self::$_funErrorNo);
         }
         try{
             $sql.=' '.$this->_keys.' where ';
             if(!$this->_and($where)){
                 $this->clear();
-                throw new \Exception('external function [_and] exception',$this->_funErrorNo);
+                throw new \Exception('external function [_and] exception',self::$_funErrorNo);
             }
             $args[]=$this->_bindType;
             $sql.=' '.$this->_wheres;
@@ -174,7 +167,7 @@ class MysqliStmt
             }
             return false;
         }catch (\Exception $e){
-            throw new \Exception('self function [update] exception ,message: <  '.$e->getMessage().'  >',$this->_selfErrorNo);
+            throw new \Exception('self function [update] exception ,message: <  '.$e->getMessage().'  >',self::$_selfErrorNo);
         }
     }
 
@@ -199,7 +192,7 @@ class MysqliStmt
             }
             return false;
         }catch (\Exception $e){
-            throw new \Exception('self function [deleteId] exception ,message: <  '.$e->getMessage().'  >',$this->_selfErrorNo);
+            throw new \Exception('self function [deleteId] exception ,message: <  '.$e->getMessage().'  >',self::$_selfErrorNo);
         }
     }
 
@@ -212,12 +205,12 @@ class MysqliStmt
      */
     public function delete($table,$where){
         if(!is_array($where)||empty($where)){
-            throw new \Exception('[delete] parameter error!',$this->_paraErrorNo);
+            throw new \Exception('[delete] parameter error!',self::$_paraErrorNo);
         }
         $sql='delete from '.$table;
         if(!$this->_and($where)){
             $this->clear();
-            throw new \Exception('external function [_and] exception',$this->_funErrorNo);
+            throw new \Exception('external function [_and] exception',self::$_funErrorNo);
         }
         try{
             $sql.=' where '.$this->_wheres;
@@ -233,7 +226,7 @@ class MysqliStmt
             }
             return false;
         }catch (\Exception $e){
-            throw new \Exception('self function [deleteId] exception ,message: <  '.$e->getMessage().'  >',$this->_selfErrorNo);
+            throw new \Exception('self function [deleteId] exception ,message: <  '.$e->getMessage().'  >',self::$_selfErrorNo);
         }
     }
 
@@ -251,7 +244,7 @@ class MysqliStmt
      */
     public function select($table,$where,$order=array(),$offset=0,$fetchNum=0,$getInfo=array('*'),$orWhere=array()){
         if(!is_array($where)||empty($where)||!is_array($order)||!is_array($orWhere)){
-            throw new \Exception('[select] parameter error!',$this->_paraErrorNo);
+            throw new \Exception('[select] parameter error!',self::$_paraErrorNo);
         }
         if(empty($getInfo)||!is_array($getInfo)){
             $getInfo=array('*');
@@ -259,7 +252,7 @@ class MysqliStmt
         $sql='select '.implode(',',$getInfo).' from '.$table;
         if(!$this->_and($where)){
             $this->clear();
-            throw new \Exception('external function [_and] exception',$this->_funErrorNo);
+            throw new \Exception('external function [_and] exception',self::$_funErrorNo);
         }
         try{
             $sql.=' where '.$this->_wheres;
@@ -267,7 +260,7 @@ class MysqliStmt
             if(!empty($orWhere)){
                 if(!$this->_or($orWhere)){
                     $this->clear();
-                    throw new \Exception('external function [_or] exception',$this->_funErrorNo);
+                    throw new \Exception('external function [_or] exception',self::$_funErrorNo);
                 }
                 $sql.=' or '.$this->_orWheres;
             }
@@ -288,7 +281,7 @@ class MysqliStmt
             $this->clear();
             return $returnData;
         }catch (\Exception $e){
-            throw new \Exception('self function [select] exception ,message: <  '.$e->getMessage().'  >',$this->_selfErrorNo);
+            throw new \Exception('self function [select] exception ,message: <  '.$e->getMessage().'  >',self::$_selfErrorNo);
         }
     }
 
@@ -306,7 +299,7 @@ class MysqliStmt
      */
     public function selectAll($table,$order=array(),$offset=0,$fetchNum=0,$getInfo=array('*'),$orWhere=array()){
         if(!is_array($order)||!is_array($orWhere)){
-            throw new \Exception('[selectAll] parameter error!',$this->_paraErrorNo);
+            throw new \Exception('[selectAll] parameter error!',self::$_paraErrorNo);
         }
         if(empty($getInfo)||!is_array($getInfo)){
             $getInfo=array('*');
@@ -316,7 +309,7 @@ class MysqliStmt
             if(!empty($orWhere)){
                 if(!$this->_or($orWhere)){
                     $this->clear();
-                    throw new \Exception('external function [_or] exception',$this->_funErrorNo);
+                    throw new \Exception('external function [_or] exception',self::$_funErrorNo);
                 }
                 $sql.=' where '.$this->_orWheres;
             }
@@ -341,7 +334,7 @@ class MysqliStmt
             $this->clear();
             return $returnData;
         }catch (\Exception $e){
-            throw new \Exception('self function [selectAll] exception ,message: <  '.$e->getMessage().'  >',$this->_selfErrorNo);
+            throw new \Exception('self function [selectAll] exception ,message: <  '.$e->getMessage().'  >',self::$_selfErrorNo);
         }
     }
 
@@ -366,14 +359,14 @@ class MysqliStmt
             if(!empty($where)){
                 if(!$this->_and($where)){
                     $this->clear();
-                    throw new \Exception('external function [_and] exception',$this->_funErrorNo);
+                    throw new \Exception('external function [_and] exception',self::$_funErrorNo);
                 }
                 $sql.=' where '.$this->_wheres;
             }
             if(!empty($orWhere)){
                 if(!$this->_or($orWhere)){
                     $this->clear();
-                    throw new \Exception('external function [_or] exception',$this->_funErrorNo);
+                    throw new \Exception('external function [_or] exception',self::$_funErrorNo);
                 }
                 if(empty($where)){
                     $sql.=' where '.$this->_orWheres;
@@ -402,7 +395,7 @@ class MysqliStmt
             $this->clear();
             return $returnData;
         }catch (\Exception $e){
-            throw new \Exception('self function [selects] exception ,message: <  '.$e->getMessage().'  >',$this->_selfErrorNo);
+            throw new \Exception('self function [selects] exception ,message: <  '.$e->getMessage().'  >',self::$_selfErrorNo);
         }
     }
 
@@ -429,7 +422,7 @@ class MysqliStmt
             $stmt->close();
             return isset($returnData[0])?$returnData[0]:array();
         }catch (\Exception $e){
-            throw new \Exception('self function [selectId] exception ,message: <  '.$e->getMessage().'  >',$this->_selfErrorNo);
+            throw new \Exception('self function [selectId] exception ,message: <  '.$e->getMessage().'  >',self::$_selfErrorNo);
         }
     }
 
@@ -469,7 +462,7 @@ class MysqliStmt
                 return false;
             }
         }catch (\Exception $e){
-            throw new \Exception('self function [query] exception ,message: <  '.$e->getMessage().'  >',$this->_selfErrorNo);
+            throw new \Exception('self function [query] exception ,message: <  '.$e->getMessage().'  >',self::$_selfErrorNo);
         }
     }
 
@@ -494,7 +487,7 @@ class MysqliStmt
             $stmt->close();
             return $returnData;
         }catch (\Exception $e){
-            throw new \Exception('self function [selectNotEqual] exception ,message: <  '.$e->getMessage().'  >',$this->_selfErrorNo);
+            throw new \Exception('self function [selectNotEqual] exception ,message: <  '.$e->getMessage().'  >',self::$_selfErrorNo);
         }
     }
 
@@ -524,14 +517,14 @@ class MysqliStmt
             if(!empty($where)){
                 if(!$this->_and($where)){
                     $this->clear();
-                    throw new \Exception('external function [_and] exception',$this->_funErrorNo);
+                    throw new \Exception('external function [_and] exception',self::$_funErrorNo);
                 }
                 $sql.=' and '.$this->_wheres;
             }
             if(!empty($orWhere)){
                 if(!$this->_or($orWhere)){
                     $this->clear();
-                    throw new \Exception('external function [_or] exception',$this->_funErrorNo);
+                    throw new \Exception('external function [_or] exception',self::$_funErrorNo);
                 }
                 $sql.=' and '.$this->_orWheres;
             }
@@ -556,7 +549,7 @@ class MysqliStmt
             $this->clear();
             return $returnData;
         }catch (\Exception $e){
-            throw new \Exception('self function [like] exception ,message: <  '.$e->getMessage().'  >',$this->_selfErrorNo);
+            throw new \Exception('self function [like] exception ,message: <  '.$e->getMessage().'  >',self::$_selfErrorNo);
         }
     }
 
@@ -590,7 +583,7 @@ class MysqliStmt
      */
     public function min($table,$columnName,$where=array(),$orWhere=array()){
         if(empty($columnName)){
-            throw new \Exception('[min] parameter error!',$this->_paraErrorNo);
+            throw new \Exception('[min] parameter error!',self::$_paraErrorNo);
         }
         $sql="select min(".$columnName.") as min from ".$table;
         $returnData=$this->_group($sql,$where,$orWhere);
@@ -608,7 +601,7 @@ class MysqliStmt
      */
     public function max($table,$columnName,$where=array(),$orWhere=array()){
         if(empty($columnName)){
-            throw new \Exception('[max] parameter error!',$this->_paraErrorNo);
+            throw new \Exception('[max] parameter error!',self::$_paraErrorNo);
         }
         $sql="select max(".$columnName.") as max from ".$table;
         $returnData=$this->_group($sql,$where,$orWhere);
@@ -626,7 +619,7 @@ class MysqliStmt
      */
     public function avg($table,$columnName,$where=array(),$orWhere=array()){
         if(empty($columnName)){
-            throw new \Exception('[avg] parameter error!',$this->_paraErrorNo);
+            throw new \Exception('[avg] parameter error!',self::$_paraErrorNo);
         }
         $sql="select avg(".$columnName.") as avg from ".$table;
         $returnData=$this->_group($sql,$where,$orWhere);
@@ -644,7 +637,7 @@ class MysqliStmt
      */
     public function sum($table,$columnName,$where=array(),$orWhere=array()){
         if(empty($columnName)){
-            throw new \Exception('[sum] parameter error!',$this->_paraErrorNo);
+            throw new \Exception('[sum] parameter error!',self::$_paraErrorNo);
         }
         $sql="select sum(".$columnName.") as sum from ".$table;
         $returnData=$this->_group($sql,$where,$orWhere);
@@ -664,14 +657,14 @@ class MysqliStmt
             if(!empty($where)){
                 if(!$this->_and($where)){
                     $this->clear();
-                    throw new \Exception('external function [_and] exception',$this->_funErrorNo);
+                    throw new \Exception('external function [_and] exception',self::$_funErrorNo);
                 }
                 $sql.=' where '.$this->_wheres;
             }
             if(!empty($orWhere)){
                 if(!$this->_or($orWhere)){
                     $this->clear();
-                    throw new \Exception('external function [_or] exception',$this->_funErrorNo);
+                    throw new \Exception('external function [_or] exception',self::$_funErrorNo);
                 }
                 if(empty($where)){
                     $sql.=' where '.$this->_orWheres;
@@ -694,7 +687,7 @@ class MysqliStmt
             $this->clear();
             return $returnData;
         }catch (\Exception $e){
-            throw new \Exception('self function [_group] exception ,message: <  '.$e->getMessage().'  >',$this->_selfErrorNo);
+            throw new \Exception('self function [_group] exception ,message: <  '.$e->getMessage().'  >',self::$_selfErrorNo);
         }
     }
 
@@ -759,7 +752,7 @@ class MysqliStmt
                 return 'd';
                 break;
         }
-        throw new \Exception('self function [_determineType] exception ,message: data type not found!',$this->_selfErrorNo);
+        throw new \Exception('self function [_determineType] exception ,message: data type not found!',self::$_selfErrorNo);
 
     }
 
@@ -800,11 +793,11 @@ class MysqliStmt
             $stmt=$this->link->prepare($sql);
             if (!$stmt){
                 $msg=$this->link->error . " --SQL: " . $sql;
-                throw new \Exception('self function [_prepare] exception ,message: '.$msg,$this->_selfErrorNo);
+                throw new \Exception('self function [_prepare] exception ,message: '.$msg,self::$_selfErrorNo);
             }
             return $stmt;
         }catch (\Exception $e){
-            throw new \Exception('self function [_prepare] exception ,message: <  '.$e->getMessage().'  >',$this->_selfErrorNo);
+            throw new \Exception('self function [_prepare] exception ,message: <  '.$e->getMessage().'  >',self::$_selfErrorNo);
         }
     }
 
@@ -830,7 +823,7 @@ class MysqliStmt
             $this->_bindValue=$valueArr;
             return true;
         }catch (\Exception $e){
-            throw new \Exception('self function [iBand] exception ,message: <  '.$e->getMessage().'  >',$this->_selfErrorNo);
+            throw new \Exception('self function [iBand] exception ,message: <  '.$e->getMessage().'  >',self::$_selfErrorNo);
         }
     }
 
@@ -853,7 +846,7 @@ class MysqliStmt
             $this->_bindValue=$valueArr;
             return true;
         }catch (\Exception $e){
-            throw new \Exception('self function [uBand] exception ,message: <  '.$e->getMessage().'  >',$this->_selfErrorNo);
+            throw new \Exception('self function [uBand] exception ,message: <  '.$e->getMessage().'  >',self::$_selfErrorNo);
         }
     }
 
@@ -904,7 +897,7 @@ class MysqliStmt
             }
             return true;
         }catch (\Exception $e){
-            throw new \Exception('self function [_and] exception ,message: <  '.$e->getMessage().'  >',$this->_selfErrorNo);
+            throw new \Exception('self function [_and] exception ,message: <  '.$e->getMessage().'  >',self::$_selfErrorNo);
         }
     }
 
@@ -935,7 +928,7 @@ class MysqliStmt
             }
             return true;
         }catch (\Exception $e){
-            throw new \Exception('self function [_or] exception ,message: <  '.$e->getMessage().'  >',$this->_selfErrorNo);
+            throw new \Exception('self function [_or] exception ,message: <  '.$e->getMessage().'  >',self::$_selfErrorNo);
         }
     }
 

@@ -13,12 +13,11 @@ class MysqliQuery
      */
     private $link;
     private static $instance=null;
-    private static $dbName='';
     /**
      * @param array $config
      * @throws \Exception
      */
-    private function __construct($config=array()){
+    private function __construct($config){
         if(empty($config)){
             $defaultDb= require __DIR__ . '/../config/config.php';
             $config=$defaultDb['db'];
@@ -28,13 +27,12 @@ class MysqliQuery
             throw new \Exception('database link failed !please configure the run.config.php file under the config folder --error:'.$conn->error.' --connect_errno:'.$conn->connect_errno);
         }
         $conn->set_charset($config['db_char_set']);
-        self::$dbName=$config['db_name'];
         $this->link=$conn;
     }
 
     private function __clone(){}
 
-    public static function getInstance($config=null){
+    public static function getInstance($config=array()){
         if(self::$instance){
             return self::$instance;
         }

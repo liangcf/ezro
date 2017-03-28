@@ -70,7 +70,7 @@ class IndexController extends Controller
             $userDao->avg('sort_order');
             $userDao->sum('sort_order');
             $dbRunTime='访问数据库的时间：'.(microtime(true) - $tTime);
-            return $this->result(array('date_test'=>date('Y-m-d H:i:s'),'my_result'=>$res2,'ret'=>$ret3,'db_time'=>$dbRunTime,'phone'=>$phone,'qr_code'=>$qrCode,'title'=>'uf-tt'))->response();
+            return $this->result(array('date_test'=>date('Y-m-d H:i:s'),'my_result'=>$res2,'ret'=>$ret3,'db_time'=>$dbRunTime,'phone'=>$phone,'qr_code'=>$qrCode,'title'=>'ezro-tt'))->response();
         }catch (\Exception $e){
             LogUtils::log('test','异常',$e->getMessage());
             echo '网络错误！重试！';
