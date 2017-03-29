@@ -11,8 +11,6 @@ class Application
     private static $runMode;
     private static $config;
     private static $baseRoot;
-    /** @var object $moduleObj*/
-    private static $moduleObj = null;
 
     public static function init(){
         self::$config=GetConfigs::runConfigs();
@@ -75,16 +73,17 @@ class Application
         if(!class_exists($_className)){
             throw new \Exception($_className.":Controller in not found",404);
         }
-        self::$moduleObj=new $_className();
-        if(!method_exists(self::$moduleObj,$_funName)){
+        $parameter['module']=$_module;
+        /* @var $moduleObj object*/
+        $moduleObj=new $_className($parameter);
+        if(!method_exists($moduleObj,$_funName)){
             throw new \Exception($_funName.':undefined in--'.$_className,500);
         }
         /*反射*/
-        self::$moduleObj->_init($_module);
-        $whole['before']=self::$moduleObj->beforeRequest();
-        $whole['data']=self::$moduleObj->$_funName();
-        $whole['after']=self::$moduleObj->afterRequest();
-        $layout=self::$moduleObj->_getLayout();
+        $whole['before']=$moduleObj->beforeRequest();
+        $whole['data']=$moduleObj->$_funName();
+        $whole['after']=$moduleObj->afterRequest();
+        $layout=$moduleObj->_getLayout();
         $_controller=strtolower($action['_controller']);
         $wholes['layout']=self::$baseRoot.'/modules/'.$_module.'/view/layout/'.strtolower($layout);
         /* 寻找视图文件的路径 */

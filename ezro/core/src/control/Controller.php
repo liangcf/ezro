@@ -14,10 +14,7 @@ abstract class Controller
 {
 	use TraitController;
 
-	public $_layout='layout';
-	public $module='web';
-
-	/*获取application.config.php配置文件中的配置项*/
+    /*获取application.config.php配置文件中的配置项*/
 	protected function getConfigValue($configKey){
 		$config=GetConfigs::applicationConfigs();
 		return $config[$configKey];
@@ -160,9 +157,6 @@ abstract class Controller
 	}
 
     /******反射使用的，非Controller内部使用的****************************************************************************/
-	public function _init($module){
-		$this->module=$module;
-	}
     public function _getLayout(){
         return $this->_layout;
     }

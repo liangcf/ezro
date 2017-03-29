@@ -8,6 +8,8 @@ namespace ezro\core\src\control;
 
 trait TraitController
 {
+    public $_layout='layout';
+    public $module='';
     /**
      * 这里所有函数都可以联级操作
      * 以下代码内容参考
@@ -15,7 +17,8 @@ trait TraitController
      */
     /************************************************************************************************************/
     private $context;
-    public function __construct() {
+    public function __construct($parameter) {
+        $this->module=$parameter['module'];
         $this->context['response'] = array(
             'data' => null,
             'api' => false,
